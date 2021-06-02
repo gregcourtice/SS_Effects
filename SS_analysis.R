@@ -61,10 +61,7 @@ data <- mutate(data,
                Log_Dur = log(Duration),
                Dose = Log_Conc + Log_Dur,
                Effect = ifelse(SEV < 5, 1, ifelse(SEV > 4 & SEV < 8, 2, 3)),
-               Effect1 = ifelse(SEV < 5, 0, 1),
-               Effect2 = ifelse(SEV < 8, 0, 1),
-               Species_NA = ifelse(is.na(Species), "Not Available", Species),
-               Species_group = ifelse(Group == "AS", Species_NA, paste0(Species_NA, "J"))
+               Effect1 = ifelse(SEV < 5, 0, 1)
 )
 
 
