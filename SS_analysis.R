@@ -7,7 +7,7 @@ library(gt)
 
 ##############Multi-Level Logistic Regression Suspended Sediment Dose-Response Model############
 
-#Code written by Greg Courtice, last updated June 2, 2021
+#Code written by Greg Courtice, last updated June 3, 2021
 
 #Database consists of Adult and Juvenile Salmonids, in addition to some non-salmonid observations
 #Non-salmonid, egg/larvae, and habitat-related observations were removed to assess stress-responses in salmonids to ambient SS exposures
@@ -61,7 +61,10 @@ data <- mutate(data,
                Log_Dur = log(Duration),
                Dose = Log_Conc + Log_Dur,
                Effect = ifelse(SEV < 5, 1, ifelse(SEV > 4 & SEV < 8, 2, 3)),
-               Effect1 = ifelse(SEV < 5, 0, 1)
+               Effect1 = ifelse(SEV < 5, 0, 1),
+               Effect2 = ifelse(SEV < 8, 0, 1),
+               Species_NA = ifelse(is.na(Species), "Not Available", Species),
+               Species_group = ifelse(Group == "AS", Species_NA, paste0(Species_NA, "J"))
 )
 
 
@@ -104,7 +107,7 @@ p_ct <-
                  color = as.factor(Effect)),
              size = 4.5)+
   xlab("Exposure Duration") +
-  ylab(expression(atop("SSC",(mgL^-1))))+
+  ylab(expression(atop(italic(SSC),(mg%.%L^-1))))+
   scale_x_continuous(trans = "log",
                      breaks = c(1.2/60,10/60,1,6,24,168,720,24*30*6,17520),
                      labels = dur_labs) +
@@ -354,7 +357,7 @@ pdose0 <- ggplot(data_f2)+
     "Major Physiological and Lethal"
   ),
   values = c(1,2,5))+
-  xlab(expression(paste(ln(dose, mg%.%h%.%L^-1))))+
+  xlab(expression(paste(ln(italic(dose),mg%.%h%.%L^-1))))+
   coord_cartesian(xlim =  c(min(data$Dose),max(data$Dose)+1))+
   scale_x_continuous(
     breaks = c(min(data$Dose),5,10,15,max(data$Dose)),
@@ -939,7 +942,7 @@ p_f3 <- ggplot(filter(data, Effect %in% c(1,3)))+
               size = 4,
               height = 0.02,
               width = 0)+
-  xlab(expression(paste(ln(dose, mg%.%h%.%L^-1))))+
+  xlab(expression(paste(ln(italic(dose),mg%.%h%.%L^-1))))+
   ylab("Probability")+
   scale_y_continuous(
     breaks = c(0.02,0.1,0.5,0.9),
