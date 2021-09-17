@@ -7,7 +7,7 @@ library(gt)
 
 ##############Multi-Level Logistic Regression Suspended Sediment Dose-Response Model############
 
-#Code written by Greg Courtice, last updated June 3, 2021
+#Code written by Greg Courtice, last updated June 2, 2021
 
 #Database consists of Adult and Juvenile Salmonids, in addition to some non-salmonid observations
 #Non-salmonid, egg/larvae, and habitat-related observations were removed to assess stress-responses in salmonids to ambient SS exposures
@@ -291,7 +291,7 @@ p.annot <- ggplot()+
                    yend = 0),
                linetype = "dotted",
                size = 0.5)+
-  geom_segment(aes(x = 1,
+  geom_segment(aes(x = 0.7,
                    xend = 0,
                    y = 4.8,
                    yend = 4.8),
@@ -357,7 +357,7 @@ pdose0 <- ggplot(data_f2)+
     "Major Physiological and Lethal"
   ),
   values = c(1,2,5))+
-  xlab(expression(paste(ln(italic(dose),mg%.%h%.%L^-1))))+
+  xlab(expression(paste(ln(italic(SSD),mg%.%h%.%L^-1))))+
   coord_cartesian(xlim =  c(min(data$Dose),max(data$Dose)+1))+
   scale_x_continuous(
     breaks = c(min(data$Dose),5,10,15,max(data$Dose)),
@@ -770,10 +770,10 @@ m.pred1.dur <- roc(m.probs,Effect1,p1.dur)
 
 #model selection
 m.summary <- tibble(Model = 1:6,
-                    Predictors = c("ln(dose)",
-                                   "ln(dose)",
-                                   "ln(dose), Life Stage",
-                                   "ln(dose), Life Stage",
+                    Predictors = c("ln(SSD)",
+                                   "ln(SSD)",
+                                   "ln(SSD), Life Stage",
+                                   "ln(SSD), Life Stage",
                                    "ln(SSC)",
                                    "ln(DoE)"
                     ),
@@ -830,6 +830,7 @@ m.summary <- tibble(Model = 1:6,
 
 #######Table 1##########
 
+
 m.tbl <- gt(m.summary)%>%
   cols_align("center")%>%
   cols_label(
@@ -839,37 +840,61 @@ m.tbl <- gt(m.summary)%>%
   tab_footnote(
     footnote = "Akaike Information Criterion (AIC) value represents relative model fit performance with a penalty for overfitting. A smaller AIC value indicates a more parsimonious model fit when compared to alternatives. Best fitting value is bolded.",
     locations = cells_column_labels(
-      columns = vars(AIC))
+      columns = c(AIC))
   )%>%
   tab_footnote(
     footnote = "Area under the receiver operating characteristic curve (AUC) represents model classification performance. A value of 1.0 indicates a perfect classification while a value of 0.5 indicates a random classification. Best classification values are bolded.",
     locations = cells_column_labels(
-      columns = vars(AUC)
+      columns = c(AUC)
     )
   )%>%
   tab_footnote(
     footnote = "Standard deviation of regression error for study level intercepts",
     locations = cells_column_labels(
-      columns = vars(Sigma)
+      columns = c(Sigma)
     )
   )%>%
   tab_footnote(
     footnote = "Model selected to present in Figure 3.",
     locations = cells_body(
-      columns = vars(Model),
+      columns = c(Model),
       rows = AIC == min(AIC))
+  ) %>%
+  tab_footnote(
+    footnote = "SSD: suspended sediment dose, SSC: suspended sediment concentration, DoE: duration of exposure, LS: life stage (adult or juvenile)",
+    locations = cells_body(
+      columns = c(Predictors),
+      rows = AIC == min(AIC))
+  ) %>%
+  tab_footnote(
+    footnote = "SSD: suspended sediment dose, SSC: suspended sediment concentration, DoE: duration of exposure, LS: life stage (adult or juvenile)",
+    locations = cells_body(
+      columns = c(Predictors),
+      rows = AUC == max(AUC))
+  ) %>%
+  tab_footnote(
+    footnote = "SSD: suspended sediment dose, SSC: suspended sediment concentration, DoE: duration of exposure, LS: life stage (adult or juvenile)",
+    locations = cells_body(
+      columns = c(Predictors),
+      rows = AUC == min(AUC))
+  ) %>%
+  tab_footnote(
+    footnote = "SSD: suspended sediment dose, SSC: suspended sediment concentration, DoE: duration of exposure, LS: life stage (adult or juvenile)",
+    locations = cells_body(
+      columns = c(Predictors),
+      rows = AUC == 0.869)
   ) %>%
   tab_style(
     style = cell_text(weight = "bold"),
     locations = cells_body(
-      columns = vars(AIC),
+      columns = c(AIC),
       rows = AIC == min(AIC)
     )
   )%>%
   tab_style(
     style = cell_text(weight = "bold"),
     locations = cells_body(
-      columns = vars(AUC),
+      columns = c(AUC),
       rows = AUC == max(AUC)
     )
   )
@@ -942,7 +967,7 @@ p_f3 <- ggplot(filter(data, Effect %in% c(1,3)))+
               size = 4,
               height = 0.02,
               width = 0)+
-  xlab(expression(paste(ln(italic(dose),mg%.%h%.%L^-1))))+
+  xlab(expression(paste(ln(italic(SSD),mg%.%h%.%L^-1))))+
   ylab("Probability")+
   scale_y_continuous(
     breaks = c(0.02,0.1,0.5,0.9),
@@ -1247,3 +1272,69 @@ p.f3 <- p_f3+
 ####### Plot Figure 3 #######
 
 p.f3
+
+####### Graphical Abstract Figures #######
+ggplot(filter(data, Effect %in% c(1,3)))+
+  theme_greg()+
+  stat_function(fun = function(x) 1/(1+exp(-(alpha1 + beta1*x))),
+                mapping = aes(x = Dose, linetype = "P(Effect>Behavioural)"),
+                size = 2,
+                data = newdata)+
+  geom_ribbon(data = newdata,
+              mapping = aes(x = Dose,
+                            ymin = 1/(1+exp(-plo)), 
+                            ymax = 1/(1+exp(-phi))
+              ),
+              alpha = 0.1)+
+  geom_jitter(data = filter(data, Effect == 1),
+              aes(x = Dose, y = -0.05),
+              shape = 1,
+              color = palette[2],
+              size = 6,
+              height = 0.02,
+              width = 0)+
+  geom_jitter(data = filter(data, Effect == 3),
+              aes(x = Dose, y = 1.05),
+              shape = 5,
+              color = palette[1],
+              size = 6,
+              height = 0.02,
+              width = 0)+
+  xlab("Predictor")+
+  ylab("Probability")+
+  scale_y_continuous(
+    sec.axis = dup_axis(name = "Binary Effect\nClassification",
+                        breaks = c(-0.05,1.05),
+                        labels = c("Behavioural\nObservations",
+                                   "Major Phys.\nand Lethal\nObservations")
+                        
+                        
+    ))+
+  scale_x_continuous(
+    breaks = c(0,5,10,15,20)
+    )+
+  theme(axis.title.y.left = element_text(size = 30,
+                                         margin = margin(r = -10)),
+        axis.text.y.left = element_blank(),
+        axis.text.y.right = element_text(hjust = 0,
+                                         margin = margin(l = -15),
+                                         size = 16),
+        axis.text.x.top = element_blank(),
+        axis.title.x.bottom = element_text(size = 30),
+        axis.title.x.top = element_blank(),
+        axis.ticks = element_blank(),
+        legend.position = "none",
+        panel.grid = element_blank(),
+        panel.border = element_blank())+
+  geom_segment(x = 20,
+               xend = 18.3,
+               y = 1.05,
+               yend = 1.05,
+               linetype = "dotted",
+               size = 0.5)+
+  geom_segment(x = 20,
+               xend = 14.5,
+               y = -0.05,
+               yend = -0.05,
+               linetype = "dotted",
+               size = 0.5)
