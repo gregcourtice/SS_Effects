@@ -7,13 +7,12 @@ library(gt)
 
 ##############Multi-Level Logistic Regression Suspended Sediment Dose-Response Model############
 
-#Code written by Greg Courtice, last updated June 2, 2021
+#Code written by Greg Courtice, last updated September 16, 2021
 
 #Database consists of Adult and Juvenile Salmonids, in addition to some non-salmonid observations
 #Non-salmonid, egg/larvae, and habitat-related observations were removed to assess stress-responses in salmonids to ambient SS exposures
 #Predictors: Selected model for Figure 3 uses ln(dose). Alternate predictors: ln(SSC), ln(DoE)
 #Life stage also considered to account for unique sensitivities between adult and juveniles
-#Unconstrained slopes among successive regressions (i.e. not proportional-odds assumption)
 
 #Effect categories used in study with respect to SEV score (Newcombe and Jensen 1996):
 ###EOI 1: Behavioural (0<SEV<=4)
@@ -47,6 +46,7 @@ data <- read_csv("data.csv") %>%
 # LS is life stage (adult or juvenile salmonid)
 # Species_NA groups all observations where species is not identified into a single group
 # Species_group separates juvenile and adults into distinct groups (we don't expect juveniles and adults to respond similarly to SS exposures)
+# Species variables above are for cursory analysis that was not included in formal study analysis
 # Effect is the Effect of Interest (EOI)
 # Effect1 is the categorization for EOI<=1 (EOI of 1 = 0, EOI of 2 or 3 = 1)
 # Effect2 is the categorization for EOI<=2 (EOI of 1 or 2 = 0, EOI of 3 = 1)
